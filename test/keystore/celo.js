@@ -774,7 +774,7 @@ async function getData(address) {
   // console.log(1, await lockedGoldContract.functions.getTotalLockedGold());
 
   const iface = new ethers.utils.Interface(rgABI);
-  const data = iface.encodeFunctionData("transfer", [address, 10000]);
+  const data = iface.encodeFunctionData("transfer", [address, 1]);
 
   return data;
   // console.log(33, releaseGoldContract.functions);
@@ -786,15 +786,15 @@ async function signTx(path, keyStore, password, to) {
   try {
     const mnemonic = await getMnemonic(password, keyStore);
     response = await signTxFromKeyStore(path, mnemonic, {
-      nonce: "0x2d",
+      nonce: "0x35",
       gasPrice: "0xffffffff",
       gasLimit: "0xffffff",
       feeCurrency: "",
       gatewayFeeRecipient: "",
       gatewayFee: "",
-      to: to,
+      to: "0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9",
       data: data,
-      value: "0x01",
+      value: "0x00",
       chainId: 44787,
     });
     // eslint-disable-next-line no-console
