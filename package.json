@@ -38,6 +38,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@celo/contractkit": "^1.2.5",
     "@cosmjs/amino": "^0.26.0",
     "@ethersproject/signing-key": "^5.4.0",
     "@ledgerhq/errors": "^6.2.0",
