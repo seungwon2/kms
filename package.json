@@ -38,6 +38,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@apollo/react-hooks": "^4.0.0",
     "@celo/contractkit": "^1.2.5",
     "@cosmjs/amino": "^0.26.0",
     "@ethersproject/signing-key": "^5.4.0",
@@ -54,6 +55,7 @@
     "@terra-money/ledger-terra-js": "^1.1.0",
     "@types/node-jose": "^1.1.7",
     "@zondax/ledger-polkadot": "^0.14.0",
+    "apollo-boost": "^0.4.9",
     "argon2-browser": "^1.18.0",
     "base58check": "^2.0.0",
     "bech32": "^2.0.0",

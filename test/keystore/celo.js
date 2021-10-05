@@ -2,14 +2,12 @@ const {
   CeloProvider,
   celoAllowedTransactionKeys,
   serializeCeloTransaction,
+  parseCeloTransaction,
 } = require("@celo-tools/celo-ethers-wrapper");
 
 const { serializeError } = require("@ledgerhq/errors");
-const { ethers, providers } = require("ethers");
+const { ethers, providers, Wallet, Contract, utils } = require("ethers");
 const { BigNumber } = require("bignumber.js");
-
-// for staking
-const { newKit } = require("@celo/contractkit");
 
 const {
   createKeyStore,
@@ -33,6 +31,7 @@ async function sendTx(signedTx) {
 // */
 
 async function getData(address) {
+  console.log("address", address);
   const rgABI = [
     {
       anonymous: false,
@@ -211,58 +210,8 @@ async function getData(address) {
     },
     {
       constant: false,
-      inputs: [
-        { internalType: "string", name: "name", type: "string" },
-        { internalType: "bytes", name: "dataEncryptionKey", type: "bytes" },
-        { internalType: "address", name: "walletAddress", type: "address" },
-        { internalType: "uint8", name: "v", type: "uint8" },
-        { internalType: "bytes32", name: "r", type: "bytes32" },
-        { internalType: "bytes32", name: "s", type: "bytes32" },
-      ],
-      name: "setAccount",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      constant: false,
       inputs: [],
       name: "createAccount",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [{ internalType: "string", name: "name", type: "string" }],
-      name: "setAccountName",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [
-        { internalType: "address", name: "walletAddress", type: "address" },
-        { internalType: "uint8", name: "v", type: "uint8" },
-        { internalType: "bytes32", name: "r", type: "bytes32" },
-        { internalType: "bytes32", name: "s", type: "bytes32" },
-      ],
-      name: "setAccountWalletAddress",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [
-        { internalType: "bytes", name: "dataEncryptionKey", type: "bytes" },
-      ],
-      name: "setAccountDataEncryptionKey",
       outputs: [],
       payable: false,
       stateMutability: "nonpayable",
@@ -315,100 +264,6 @@ async function getData(address) {
         {
           indexed: true,
           internalType: "address",
-          name: "slashed",
-          type: "address",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "penalty",
-          type: "uint256",
-        },
-        {
-          indexed: true,
-          internalType: "address",
-          name: "reporter",
-          type: "address",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "reward",
-          type: "uint256",
-        },
-      ],
-      name: "AccountSlashed",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "address",
-          name: "account",
-          type: "address",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "value",
-          type: "uint256",
-        },
-      ],
-      name: "GoldLocked",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "address",
-          name: "account",
-          type: "address",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "value",
-          type: "uint256",
-        },
-      ],
-      name: "GoldRelocked",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "address",
-          name: "account",
-          type: "address",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "value",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "available",
-          type: "uint256",
-        },
-      ],
-      name: "GoldUnlocked",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "address",
           name: "account",
           type: "address",
         },
@@ -420,64 +275,6 @@ async function getData(address) {
         },
       ],
       name: "GoldWithdrawn",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "address",
-          name: "previousOwner",
-          type: "address",
-        },
-        {
-          indexed: true,
-          internalType: "address",
-          name: "newOwner",
-          type: "address",
-        },
-      ],
-      name: "OwnershipTransferred",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "address",
-          name: "registryAddress",
-          type: "address",
-        },
-      ],
-      name: "RegistrySet",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "string",
-          name: "slasherIdentifier",
-          type: "string",
-        },
-      ],
-      name: "SlasherWhitelistAdded",
-      type: "event",
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: "string",
-          name: "slasherIdentifier",
-          type: "string",
-        },
-      ],
-      name: "SlasherWhitelistRemoved",
       type: "event",
     },
     {
@@ -496,86 +293,10 @@ async function getData(address) {
     {
       constant: true,
       inputs: [],
-      name: "initialized",
-      outputs: [{ internalType: "bool", name: "", type: "bool" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "isOwner",
-      outputs: [{ internalType: "bool", name: "", type: "bool" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "owner",
-      outputs: [{ internalType: "address", name: "", type: "address" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "registry",
-      outputs: [
-        { internalType: "contract IRegistry", name: "", type: "address" },
-      ],
-      payable: false,
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [],
-      name: "renounceOwnership",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [
-        { internalType: "address", name: "registryAddress", type: "address" },
-      ],
-      name: "setRegistry",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      constant: true,
-      inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-      name: "slashingWhitelist",
-      outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      constant: true,
-      inputs: [],
       name: "totalNonvoting",
       outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
       payable: false,
       stateMutability: "view",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
-      name: "transferOwnership",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
       type: "function",
     },
     {
@@ -588,80 +309,12 @@ async function getData(address) {
       type: "function",
     },
     {
-      constant: true,
-      inputs: [{ internalType: "address", name: "slasher", type: "address" }],
-      name: "isSlasher",
-      outputs: [{ internalType: "bool", name: "", type: "bool" }],
-      payable: false,
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      constant: true,
-      inputs: [],
-      name: "getVersionNumber",
-      outputs: [
-        { internalType: "uint256", name: "", type: "uint256" },
-        { internalType: "uint256", name: "", type: "uint256" },
-        { internalType: "uint256", name: "", type: "uint256" },
-        { internalType: "uint256", name: "", type: "uint256" },
-      ],
-      payable: false,
-      stateMutability: "pure",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [
-        { internalType: "address", name: "registryAddress", type: "address" },
-        { internalType: "uint256", name: "_unlockingPeriod", type: "uint256" },
-      ],
-      name: "initialize",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [{ internalType: "uint256", name: "value", type: "uint256" }],
-      name: "setUnlockingPeriod",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
       constant: false,
       inputs: [],
       name: "lock",
       outputs: [],
       payable: true,
       stateMutability: "payable",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [
-        { internalType: "address", name: "account", type: "address" },
-        { internalType: "uint256", name: "value", type: "uint256" },
-      ],
-      name: "incrementNonvotingAccountBalance",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [
-        { internalType: "address", name: "account", type: "address" },
-        { internalType: "uint256", name: "value", type: "uint256" },
-      ],
-      name: "decrementNonvotingAccountBalance",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
       type: "function",
     },
     {
@@ -760,13 +413,16 @@ async function getData(address) {
       stateMutability: "view",
       type: "function",
     },
+  ];
+  const electionABI = [
     {
       constant: false,
       inputs: [
-        { internalType: "string", name: "slasherIdentifier", type: "string" },
+        { internalType: "uint256", name: "min", type: "uint256" },
+        { internalType: "uint256", name: "max", type: "uint256" },
       ],
-      name: "addSlasher",
-      outputs: [],
+      name: "setElectableValidators",
+      outputs: [{ internalType: "bool", name: "", type: "bool" }],
       payable: false,
       stateMutability: "nonpayable",
       type: "function",
@@ -774,62 +430,62 @@ async function getData(address) {
     {
       constant: false,
       inputs: [
-        { internalType: "string", name: "slasherIdentifier", type: "string" },
-        { internalType: "uint256", name: "index", type: "uint256" },
+        { internalType: "address", name: "group", type: "address" },
+        { internalType: "uint256", name: "value", type: "uint256" },
+        { internalType: "address", name: "lesser", type: "address" },
+        { internalType: "address", name: "greater", type: "address" },
       ],
-      name: "removeSlasher",
-      outputs: [],
-      payable: false,
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      constant: false,
-      inputs: [
-        { internalType: "address", name: "account", type: "address" },
-        { internalType: "uint256", name: "penalty", type: "uint256" },
-        { internalType: "address", name: "reporter", type: "address" },
-        { internalType: "uint256", name: "reward", type: "uint256" },
-        { internalType: "address[]", name: "lessers", type: "address[]" },
-        { internalType: "address[]", name: "greaters", type: "address[]" },
-        { internalType: "uint256[]", name: "indices", type: "uint256[]" },
-      ],
-      name: "slash",
-      outputs: [],
+      name: "vote",
+      outputs: [{ internalType: "bool", name: "", type: "bool" }],
       payable: false,
       stateMutability: "nonpayable",
       type: "function",
     },
   ];
-  const rgIface = new ethers.utils.Interface(rgABI);
-  const lgIface = new ethers.utils.Interface(lgABI);
-  // const data = rgIface.encodeFunctionData("transfer", [address, 1]);
-  const data = lgIface.encodeFunctionData("lock");
-  // const data = lgIface.encodeFunctionData("");
+  const provider = new CeloProvider("https://alfajores-forno.celo-testnet.org");
+  const signer = new Wallet(address, provider);
 
+  const accountContract = new ethers.utils.Interface(rgABI);
+  const electionContract = new ethers.utils.Interface(electionABI);
+  const data = electionContract.encodeFunctionData("vote", [signer]);
+  console.log("data", data);
+
+  // const signature = signer.signDigest(
+  //   utils.keccak256(
+  //     serializeCeloTransaction(accountContract.functions.authorizeVoteSigner())
+  //   )
+  // );
+
+  //  * @dev The v,r and s signature should be signed by the authorized signer
+  //      key, with the ReleaseGold contract address as the message.
+
+  // const rgIface = new ethers.utils.Interface(rgABI);
+  // const lgIface = new ethers.utils.Interface(lgABI);
+  // const electionIface = new ethers.utils.Interface(electionABI);
   return data;
-  // console.log(33, releaseGoldContract.functions);
 }
 
 async function signTx(path, keyStore, password, to) {
   let response;
   const data = await getData(to);
+  console.log(data);
   const accountsProxy = "0xed7f51A34B4e71fbE69B3091FcF879cD14bD73A9";
-  const celoNativeContract = "0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9";
+  const celoNativeTokenContract = "0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9";
   const lockedGoldProxy = "0x6a4CC5693DC5BFA3799C699F3B941bA2Cb00c341";
+  const electionProxy = "0x1c3eDf937CFc2F6F51784D20DEB1af1F9a8655fA";
 
   try {
     const mnemonic = await getMnemonic(password, keyStore);
     response = await signTxFromKeyStore(path, mnemonic, {
-      nonce: "0x52",
+      nonce: "0x6c",
       gasPrice: "0xffffffff",
       gasLimit: "0xffffff",
       feeCurrency: "",
       gatewayFeeRecipient: "",
       gatewayFee: "",
-      to: lockedGoldProxy,
+      to: electionProxy,
       data: data,
-      value: "0xfffffff",
+      value: "0x00",
       chainId: 44787,
     });
     // eslint-disable-next-line no-console
@@ -856,9 +512,6 @@ async function run() {
     PASSWORD,
     account
   );
-
-  // const kit = newKit("https://alfajores-forno.celo-testnet.org");
-  // console.log(1, await kit.contracts.getContract());
 
   await sendTx(signedTx.signedTx);
   // test(account);
