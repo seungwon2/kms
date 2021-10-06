@@ -41,19 +41,14 @@ async function sendTx(signedTx) {
 }
 
 async function getData(address) {
-  const pk = "";
-  const wallet = new LocalWallet();
-  // wallet.init();
-
-  wallet.addAccount(pk);
-  console.log("wallet: ", wallet);
+  // console.log("wallet: ", wallet);
   // const wallet = new Wallet(address, provider);
-  const kit = new newKit("https://alfajores-forno.celo-testnet.org", wallet);
+  const kit = new newKit("https://alfajores-forno.celo-testnet.org");
   kit.defaultAccount = address;
 
   //create Account
   //이미 create 되어있어서 작동 안됨
-  // const accounts = await kit.contracts.getAccounts();
+  const accounts = await kit.contracts.getAccounts();
   // tx = accounts.createAccount();
   // await tx.sendAndWaitForReceipt();
 
@@ -64,10 +59,18 @@ async function getData(address) {
   console.log(locked.toString());
 
   //authorizeVoteSigner
-  //signature에 무엇을 넣어야 하는가...? 어휴어우하우휴
-  // const txo = await accounts.authorizeVoteSigner(wallet, signature);
-  // console.log(1, await txo.sendAndWaitForReceipt());
-
+  //https://github.com/zviadm/celoterminal/blob/ee7ce160c2135f58962f4620fd46fab1cbcd7169/src/renderer/apps/celovote/celovote.tsx#L142
+  const signer = kit.web3.eth.accounts.create();
+  console.log("signer: ", signer);
+  const signature = await accounts.generateProofOfKeyPossessionLocally(
+    address,
+    signer.address,
+    signer.privateKey
+  );
+  console.log("sig: ", signature);
+  const tx = await accounts.authorizeVoteSigner(signer.address, signature);
+  const result = await tx.sendAndWaitForReceipt();
+  console.log("result: ", result);
   //election
   // const electionWrapper = await kit.contracts.getElection();
   // const voter = await electionWrapper.getVoter(address);
@@ -77,13 +80,6 @@ async function getData(address) {
 
   // await tx.sendAndWaitForReceipt();
   // console.log("voter: ", voter);
-
-  //authorizeVoteSigner
-  const releaseGoldWrapper = new ReleaseGoldWrapper(
-    kit,
-    newReleaseGold(kit.web3, address)
-  );
-  releaseGoldWrapper.authorizeVoteSigner(wallet, wallet.signPersonalMessage());
 }
 
 async function signTx(path, keyStore, password, to) {
