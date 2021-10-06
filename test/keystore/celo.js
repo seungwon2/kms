@@ -3,6 +3,7 @@ const {
   celoAllowedTransactionKeys,
   serializeCeloTransaction,
   parseCeloTransaction,
+  CeloWallet,
 } = require("@celo-tools/celo-ethers-wrapper");
 
 const { serializeError } = require("@ledgerhq/errors");
@@ -17,8 +18,7 @@ const {
   newReleaseGold,
 } = require("@celo/contractkit/lib/generated/ReleaseGold");
 
-const { ReadOnlyWallet } = require("@celo/connect");
-const { LocalWallet } = require("@celo/wallet-local/lib/index");
+const { LocalWallet } = require("@celo/wallet-local");
 
 const {
   createKeyStore,
@@ -41,9 +41,11 @@ async function sendTx(signedTx) {
 }
 
 async function getData(address) {
-  const provider = new CeloProvider("https://alfajores-forno.celo-testnet.org");
+  const pk = "";
   const wallet = new LocalWallet();
-  wallet.addAccount(address);
+  // wallet.init();
+
+  wallet.addAccount(pk);
   console.log("wallet: ", wallet);
   // const wallet = new Wallet(address, provider);
   const kit = new newKit("https://alfajores-forno.celo-testnet.org", wallet);
@@ -62,19 +64,26 @@ async function getData(address) {
   console.log(locked.toString());
 
   //authorizeVoteSigner
-  //signature에 무엇을 넣어야 하는가...?
+  //signature에 무엇을 넣어야 하는가...? 어휴어우하우휴
   // const txo = await accounts.authorizeVoteSigner(wallet, signature);
   // console.log(1, await txo.sendAndWaitForReceipt());
 
   //election
-  const electionWrapper = await kit.contracts.getElection();
-  const voter = await electionWrapper.getVoter(address);
-  console.log(1, await electionWrapper.electableValidators());
-  const validator = "0x87614eD7AF361a563C6a3624CcadD52e165f67C2";
-  const tx = await electionWrapper.vote(validator, 100);
-  console.log("tx: ", tx);
-  await tx.sendAndWaitForReceipt();
-  console.log("voter: ", voter);
+  // const electionWrapper = await kit.contracts.getElection();
+  // const voter = await electionWrapper.getVoter(address);
+  // console.log(1, await electionWrapper.electableValidators());
+  // const validator = "0x87614eD7AF361a563C6a3624CcadD52e165f67C2";
+  // const tx = await electionWrapper.vote(validator, 100);
+
+  // await tx.sendAndWaitForReceipt();
+  // console.log("voter: ", voter);
+
+  //authorizeVoteSigner
+  const releaseGoldWrapper = new ReleaseGoldWrapper(
+    kit,
+    newReleaseGold(kit.web3, address)
+  );
+  releaseGoldWrapper.authorizeVoteSigner(wallet, wallet.signPersonalMessage());
 }
 
 async function signTx(path, keyStore, password, to) {
@@ -117,6 +126,7 @@ async function run() {
     keyStore,
     PASSWORD
   );
+
   // const signedTx = await signTx(
   //   { type: TYPE, account: 0, index: INDEX },
   //   keyStore,

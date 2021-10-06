@@ -14,6 +14,7 @@ export class KEYSTORE {
 
   static getAccount(node: BIP32Interface): string {
     const { privateKey } = node;
+    console.log("pk", privateKey?.toString("hex"));
     return privateKey
       ? toChecksumAddress(`0x${privateToAddress(privateKey).toString("hex")}`)
       : "";
