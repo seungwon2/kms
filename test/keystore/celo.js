@@ -1,23 +1,6 @@
-const {
-  CeloProvider,
-  celoAllowedTransactionKeys,
-  serializeCeloTransaction,
-  parseCeloTransaction,
-  CeloWallet,
-} = require("@celo-tools/celo-ethers-wrapper");
-
-const { serializeError } = require("@ledgerhq/errors");
-const { ethers, providers, Contract, utils } = require("ethers");
-const { BigNumber } = require("bignumber.js");
-
-const { ContractKit, newKit } = require("@celo/contractkit");
-const {
-  ReleaseGoldWrapper,
-} = require("@celo/contractkit/lib/wrappers/ReleaseGold");
-const {
-  newReleaseGold,
-} = require("@celo/contractkit/lib/generated/ReleaseGold");
-
+const { CeloProvider } = require("@celo-tools/celo-ethers-wrapper");
+const { ethers, providers, Wallet } = require("ethers");
+const { newKit } = require("@celo/contractkit");
 const { LocalWallet } = require("@celo/wallet-local");
 
 const {
@@ -41,45 +24,244 @@ async function sendTx(signedTx) {
 }
 
 async function getData(address) {
-  // console.log("wallet: ", wallet);
-  // const wallet = new Wallet(address, provider);
-  const kit = new newKit("https://alfajores-forno.celo-testnet.org");
+  // const rgABI = [
+  //   {
+  //     anonymous: false,
+  //     inputs: [
+  //       {
+  //         indexed: true,
+  //         internalType: "address",
+  //         name: "beneficiary",
+  //         type: "address",
+  //       },
+  //     ],
+  //     name: "BeneficiarySet",
+  //     type: "event",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [
+  //       { internalType: "address", name: "to", type: "address" },
+  //       { internalType: "uint256", name: "value", type: "uint256" },
+  //     ],
+  //     name: "transfer",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+
+  //   {
+  //     constant: false,
+  //     inputs: [
+  //       {
+  //         internalType: "address payable",
+  //         name: "newBeneficiary",
+  //         type: "address",
+  //       },
+  //     ],
+  //     name: "setBeneficiary",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+  //     name: "withdraw",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [],
+  //     name: "refundAndFinalize",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [],
+  //     name: "revoke",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [],
+  //     name: "expire",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: true,
+  //     inputs: [],
+  //     name: "getTotalBalance",
+  //     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+  //     payable: false,
+  //     stateMutability: "view",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: true,
+  //     inputs: [],
+  //     name: "getRemainingTotalBalance",
+  //     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+  //     payable: false,
+  //     stateMutability: "view",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: true,
+  //     inputs: [],
+  //     name: "getRemainingUnlockedBalance",
+  //     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+  //     payable: false,
+  //     stateMutability: "view",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: true,
+  //     inputs: [],
+  //     name: "getRemainingLockedBalance",
+  //     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+  //     payable: false,
+  //     stateMutability: "view",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: true,
+  //     inputs: [],
+  //     name: "getCurrentReleasedTotalAmount",
+  //     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+  //     payable: false,
+  //     stateMutability: "view",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [{ internalType: "uint256", name: "value", type: "uint256" }],
+  //     name: "lockGold",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [{ internalType: "uint256", name: "value", type: "uint256" }],
+  //     name: "unlockGold",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [
+  //       { internalType: "uint256", name: "index", type: "uint256" },
+  //       { internalType: "uint256", name: "value", type: "uint256" },
+  //     ],
+  //     name: "relockGold",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [{ internalType: "uint256", name: "index", type: "uint256" }],
+  //     name: "withdrawLockedGold",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [
+  //       { internalType: "address payable", name: "signer", type: "address" },
+  //       { internalType: "uint8", name: "v", type: "uint8" },
+  //       { internalType: "bytes32", name: "r", type: "bytes32" },
+  //       { internalType: "bytes32", name: "s", type: "bytes32" },
+  //     ],
+  //     name: "authorizeVoteSigner",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [],
+  //     name: "createAccount",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [{ internalType: "string", name: "metadataURL", type: "string" }],
+  //     name: "setAccountMetadataURL",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [
+  //       { internalType: "address", name: "group", type: "address" },
+  //       { internalType: "uint256", name: "value", type: "uint256" },
+  //       { internalType: "address", name: "lesser", type: "address" },
+  //       { internalType: "address", name: "greater", type: "address" },
+  //       { internalType: "uint256", name: "index", type: "uint256" },
+  //     ],
+  //     name: "revokeActive",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  //   {
+  //     constant: false,
+  //     inputs: [
+  //       { internalType: "address", name: "group", type: "address" },
+  //       { internalType: "uint256", name: "value", type: "uint256" },
+  //       { internalType: "address", name: "lesser", type: "address" },
+  //       { internalType: "address", name: "greater", type: "address" },
+  //       { internalType: "uint256", name: "index", type: "uint256" },
+  //     ],
+  //     name: "revokePending",
+  //     outputs: [],
+  //     payable: false,
+  //     stateMutability: "nonpayable",
+  //     type: "function",
+  //   },
+  // ];
+  // const rgIface = new ethers.utils.Interface(rgABI);
+  // const data = rgIface.encodeFunctionData("createAccount", []);
+
+  const wallet = new LocalWallet();
+  wallet.addAccount("pk");
+  const kit = new newKit("https://alfajores-forno.celo-testnet.org", wallet);
   kit.defaultAccount = address;
-
-  //create Account
-  //이미 create 되어있어서 작동 안됨
+  console.log(kit.defaultAccount);
   const accounts = await kit.contracts.getAccounts();
-  // tx = accounts.createAccount();
-  // await tx.sendAndWaitForReceipt();
+  tx = accounts.createAccount();
+  await tx.sendAndWaitForReceipt();
 
-  //lockgold
-  //정상 작동
-  const lockedGoldWrapper = await kit.contracts.getLockedGold();
-  let locked = await lockedGoldWrapper.getAccountTotalLockedGold(address);
-  console.log(locked.toString());
-
-  //authorizeVoteSigner
-  //https://github.com/zviadm/celoterminal/blob/ee7ce160c2135f58962f4620fd46fab1cbcd7169/src/renderer/apps/celovote/celovote.tsx#L142
-  const signer = kit.web3.eth.accounts.create();
-  console.log("signer: ", signer);
-  const signature = await accounts.generateProofOfKeyPossessionLocally(
-    address,
-    signer.address,
-    signer.privateKey
-  );
-  console.log("sig: ", signature);
-  const tx = await accounts.authorizeVoteSigner(signer.address, signature);
-  const result = await tx.sendAndWaitForReceipt();
-  console.log("result: ", result);
-  //election
-  // const electionWrapper = await kit.contracts.getElection();
-  // const voter = await electionWrapper.getVoter(address);
-  // console.log(1, await electionWrapper.electableValidators());
-  // const validator = "0x87614eD7AF361a563C6a3624CcadD52e165f67C2";
-  // const tx = await electionWrapper.vote(validator, 100);
-
-  // await tx.sendAndWaitForReceipt();
-  // console.log("voter: ", voter);
+  // return data;
 }
 
 async function signTx(path, keyStore, password, to) {
@@ -89,17 +271,21 @@ async function signTx(path, keyStore, password, to) {
   const lockedGoldProxy = "0x6a4CC5693DC5BFA3799C699F3B941bA2Cb00c341";
   const electionProxy = "0x1c3eDf937CFc2F6F51784D20DEB1af1F9a8655fA";
 
-  const data = getData(to);
+  const signUser = "0x3b9E4a4F0E9fAc88715835A5587B56764bcA94B2";
+  const user1 = "0x2138AAE169B83c1AFC3D36dD0a554123c21f3FBC";
+  const user2 = "0x981bab2A67AcC7b577df1328F13434c775590063";
+
+  const data = await getData(signUser);
   try {
     const mnemonic = await getMnemonic(password, keyStore);
     response = await signTxFromKeyStore(path, mnemonic, {
-      nonce: "0x6c",
+      nonce: "0x01",
       gasPrice: "0xffffffff",
       gasLimit: "0xffffff",
       feeCurrency: "",
       gatewayFeeRecipient: "",
       gatewayFee: "",
-      to: electionProxy,
+      to: accountsProxy,
       data: data,
       value: "0x00",
       chainId: 44787,
@@ -122,7 +308,6 @@ async function run() {
     keyStore,
     PASSWORD
   );
-
   // const signedTx = await signTx(
   //   { type: TYPE, account: 0, index: INDEX },
   //   keyStore,
