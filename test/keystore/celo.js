@@ -253,13 +253,39 @@ async function getData(address) {
   // const data = rgIface.encodeFunctionData("createAccount", []);
 
   const wallet = new LocalWallet();
-  wallet.addAccount("pk");
+  wallet.addAccount(
+    "568dfde8a906d45439420cfb53aaad85423aaef34d574bf99326ae19d90616eb"
+  );
   const kit = new newKit("https://alfajores-forno.celo-testnet.org", wallet);
-  kit.defaultAccount = address;
-  console.log(kit.defaultAccount);
+
+  //create account
+  kit.defaultAccount = "0x2138AAE169B83c1AFC3D36dD0a554123c21f3FBC";
   const accounts = await kit.contracts.getAccounts();
-  tx = accounts.createAccount();
-  await tx.sendAndWaitForReceipt();
+  // tx = accounts.createAccount();
+  // await tx.sendAndWaitForReceipt();
+
+  //lock gold
+  // const lockedGoldWrapper = await kit.contracts.getLockedGold();
+  // let locked = await lockedGoldWrapper.getAccountTotalLockedGold(address);
+  // console.log(locked.toString());
+
+  //authorizeVoteSigner
+  // const signer = kit.web3.eth.accounts.create();
+
+  const signature = await accounts.generateProofOfKeyPossessionLocally(
+    kit.defaultAccount,
+    "0x981bab2A67AcC7b577df1328F13434c775590063",
+    "0x171684f52f30092a33b1aebacfd3095045de4e21e992c84162fc239367f15110"
+  );
+  console.log("sig: ", signature);
+
+  const tx2 = await accounts.authorizeVoteSigner(
+    "0x981bab2A67AcC7b577df1328F13434c775590063",
+    signature
+  );
+  console.log("tx: ", tx2);
+  const result = await tx2.sendAndWaitForReceipt();
+  console.log("result: ", result);
 
   // return data;
 }
