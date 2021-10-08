@@ -12,6 +12,8 @@ const {
   MNEMONIC,
 } = require("./_getAccount");
 
+const Web3 = require("web3");
+
 const TYPE = CHAIN.CELO;
 const INDEX = 0;
 
@@ -24,6 +26,10 @@ async function sendTx(signedTx) {
 }
 
 async function getData(address) {
+  // celo 자동 딜리게이션 최종 단계 authorizevotesigner 컨트랙트 키트로 테스트 완료했고 셀로 보트 테스트 하고 액티베잇 되는 것 까지 확인 완료.
+  // revoke, deactivate, withdraw celovote로 한번 해보기 필요
+  // 이제 컨트랙트 키트 빼고 이더리움쪽 라이브러리로 변경하고, 셀로 수동으로 딜리게이션하고 리워드 얻는 과정 다음주에 완료하겠습니다.
+
   // const rgABI = [
   //   {
   //     anonymous: false,
@@ -252,40 +258,47 @@ async function getData(address) {
   // const rgIface = new ethers.utils.Interface(rgABI);
   // const data = rgIface.encodeFunctionData("createAccount", []);
 
+  // const web3 = new Web3("https://alfajores-forno.celo-testnet.org");
+  // const singerForWallet = await web3.eth.accounts.create();
+  // console.log("signer: ", singerForWallet);
   const wallet = new LocalWallet();
   wallet.addAccount(
-    "568dfde8a906d45439420cfb53aaad85423aaef34d574bf99326ae19d90616eb"
+    "b91f14a9ae714093ae294e82c159e6a1a78ddb1dc4fa1938e0934391e001cae0"
   );
+  console.log(wallet);
   const kit = new newKit("https://alfajores-forno.celo-testnet.org", wallet);
-
+  // const signer = kit.web3.eth.accounts.create();
   //create account
-  kit.defaultAccount = "0x2138AAE169B83c1AFC3D36dD0a554123c21f3FBC";
+  kit.defaultAccount = address;
+  console.log(kit.defaultAccount);
   const accounts = await kit.contracts.getAccounts();
-  // tx = accounts.createAccount();
-  // await tx.sendAndWaitForReceipt();
+  tx1 = accounts.createAccount();
+  console.log(111, tx1);
+  await tx1.sendAndWaitForReceipt();
+  // console.log("result: ", result1);
 
   //lock gold
   // const lockedGoldWrapper = await kit.contracts.getLockedGold();
-  // let locked = await lockedGoldWrapper.getAccountTotalLockedGold(address);
-  // console.log(locked.toString());
+  // const value = 1000000000000000000;
+  // const tx2 = await lockedGoldWrapper.lock();
+  // const result = await tx2.sendAndWaitForReceipt({ value });
+  // console.log("result: ", result);
 
   //authorizeVoteSigner
-  // const signer = kit.web3.eth.accounts.create();
 
   const signature = await accounts.generateProofOfKeyPossessionLocally(
     kit.defaultAccount,
-    "0x981bab2A67AcC7b577df1328F13434c775590063",
-    "0x171684f52f30092a33b1aebacfd3095045de4e21e992c84162fc239367f15110"
+    singerForWallet.address,
+    singerForWallet.privateKey
   );
   console.log("sig: ", signature);
-
-  const tx2 = await accounts.authorizeVoteSigner(
-    "0x981bab2A67AcC7b577df1328F13434c775590063",
-    signature
-  );
-  console.log("tx: ", tx2);
-  const result = await tx2.sendAndWaitForReceipt();
-  console.log("result: ", result);
+  // const tx2 = await accounts.authorizeVoteSigner(
+  //   "0x2138AAE169B83c1AFC3D36dD0a554123c21f3FBC",
+  //   signature
+  // );
+  // console.log("tx: ", tx2);
+  // const result = await tx2.sendAndWaitForReceipt();
+  // console.log("result: ", result);
 
   // return data;
 }
